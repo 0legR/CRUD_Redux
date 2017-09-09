@@ -5,5 +5,5 @@ export default function handleResponse(res) {
     let error = new Error(res.statusText);
     error.response = res;
     throw error;
-  };
+  }
 }
