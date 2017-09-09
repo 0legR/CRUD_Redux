@@ -1,13 +1,17 @@
 import React, {Component} from 'react';
 import classnames from 'classnames';
+import {connect} from 'react-redux';
+import PropTypes from 'prop-types';
+import saveGames from '../actions/saveGames';
 
-export default class GameForm extends Component {
+class GameForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
       title: "",
       cover: "",
-      errors: {}
+      errors: {},
+      isLoading: false
     }
     this.handleChange = this.handleChange.bind(this);
     this.handleOnSubmit = this.handleOnSubmit.bind(this);
@@ -16,8 +20,8 @@ export default class GameForm extends Component {
 
   handleChange(e){
     if (!!this.state.errors[e.target.name]) {
-      let errors = Object.assign({}, this.state.errors);
-      delete errors[e.target.name];
+      let errors = Object.assign({}, this.state.errors);//clone errors from state
+      delete errors[e.target.name]; //after this validate massage will gone
       this.setState({
         [e.target.name]: e.target.value,
         errors
@@ -38,14 +42,28 @@ export default class GameForm extends Component {
     if (this.state.cover === '') {
       errors.cover = "Can`t be empty";
     }
-
     this.setState({errors});
+    const isValid = Object.keys(errors).length === 0;
+
+    if (isValid) {
+      const {title, cover} = this.state;
+      this.setState({isLoading: true});
+      this.props.saveGames({title, cover})
+        .then(
+            () => {},
+            (err) => err.response.json()
+            .then(({errors}) => this.setState({
+              errors, isLoading: false
+            }))
+      );
+    }
   }
 
   render() {
     return (
-      <form className="ui form" onSubmit={this.handleOnSubmit}>
+      <form className={classnames("ui", "form", {loading: this.state.isLoading})} onSubmit={this.handleOnSubmit}>
         <h1>Add New Game</h1>
+        {!!this.state.errors.global && <div className="ui negative message"><p>{this.state.errors.global}</p></div>}
         <div className={classnames("field", {error: !!this.state.errors.title})}>
           <label htmlFor="title">Title</label>
           <input
@@ -76,3 +94,9 @@ export default class GameForm extends Component {
     );
   }
 }
+
+GameForm.propTypes = {
+  saveGames: PropTypes.func.isRequired
+}
+
+export default connect(null, {saveGames})(GameForm);
