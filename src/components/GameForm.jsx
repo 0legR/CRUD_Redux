@@ -4,13 +4,15 @@ import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 import saveGames from '../actions/saveGames';
 import {Redirect} from 'react-router-dom';
+import fetchOneGame from '../actions/fetchOneGame';
 
 class GameForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      title: "",
-      cover: "",
+      _id: this.props.game ? this.props.game._id : null,
+      title: this.props.game ? this.props.game.title : "",
+      cover: this.props.game ? this.props.game.cover : "",
       errors: {},
       isLoading: false,
       done: false
@@ -60,6 +62,19 @@ class GameForm extends Component {
       );
     }
   }
+  componentDidMount = () => {
+    if (this.props.match.params._id) {
+      this.props.fetchOneGame(this.props.match.params._id);
+    }
+  }
+
+  componentWillReceiveProps = (nextProps) => {
+    this.setState({
+      _id: nextProps.game._id,
+      title: nextProps.game.title,
+      cover: nextProps.game.cover
+    })
+  }
 
   render() {
     const form = <form className={classnames("ui", "form", {loading: this.state.isLoading})} onSubmit={this.handleOnSubmit}>
@@ -105,4 +120,13 @@ GameForm.propTypes = {
   saveGames: PropTypes.func.isRequired
 }
 
-export default connect(null, {saveGames})(GameForm);
+function mapStateToProps(state, props) {
+  if (props.match.params._id) {
+    return {
+      game: state.games.find(item => item._id === props.match.params._id)
+    }
+  }
+  return {game: null};
+}
+
+export default connect(mapStateToProps, {saveGames, fetchOneGame})(GameForm);

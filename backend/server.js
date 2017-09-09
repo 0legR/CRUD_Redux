@@ -43,6 +43,19 @@ mongodb.MongoClient.connect(dbUrl, function(err, db) {
 
   });
 
+  app.get('/api/games/:_id', (req, res) => {
+    db.collection('games').findOne(
+      {_id: new mongodb.ObjectId(req.params._id)},
+      (err, game) => {
+        if (err) {
+          res.status(500).json({errors: {global: "Error from db response"}})
+        } else {
+          res.status(201).json({game});
+        }
+      }
+    )
+  });
+
   app.use((req, res) => {
     res.status(404).json({
       errors: {
