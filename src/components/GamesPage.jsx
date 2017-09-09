@@ -1,27 +1,33 @@
 import React, {Component} from 'react';
+import GamesList from './GamesList';
 import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
-import GamesList from './GamesList';
+import fetchGames from '../actions/fetchGames';
 
 class GamesPage extends Component {
+  componentDidMount() {
+      this.props.fetchGames();
+  }
+
   render() {
     return (
       <div>
-        <h1>Games LIst</h1>
+        <h1>Games List</h1>
         <GamesList games={this.props.games} />
       </div>
     );
   }
-};
-
-GamesPage.propTypes = {
-    games: PropTypes.array.isRequired
 }
 
 function mapStateToProps(state) {
-  return {
-    games: state.games
-  }
+    return {
+      games: state.games
+    }
 }
 
-export default connect(mapStateToProps)(GamesPage);
+GamesPage.propTypes = {
+  games: PropTypes.array.isRequired,
+  fetchGames: PropTypes.func.isRequired
+}
+
+export default connect(mapStateToProps, {fetchGames})(GamesPage);
