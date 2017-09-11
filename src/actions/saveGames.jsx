@@ -8,5 +8,4 @@ export default (data) => dispatch => fetch('/api/games', {
     "Content-Type": "application/json"
   }
 }).then(handleResponse)
-.then(console.log(data))
 .then(data => dispatch(addGame(data.game)));

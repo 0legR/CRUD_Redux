@@ -1,12 +1,7 @@
 import React, {Component} from 'react';
 import classnames from 'classnames';
-import {connect} from 'react-redux';
-import PropTypes from 'prop-types';
-import saveGames from '../actions/saveGames';
-import {Redirect} from 'react-router-dom';
-import fetchOneGame from '../actions/fetchOneGame';
 
-class GameForm extends Component {
+export default class GameForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -14,8 +9,7 @@ class GameForm extends Component {
       title: this.props.game ? this.props.game.title : "",
       cover: this.props.game ? this.props.game.cover : "",
       errors: {},
-      isLoading: false,
-      done: false
+      isLoading: false
     }
     this.handleChange = this.handleChange.bind(this);
     this.handleOnSubmit = this.handleOnSubmit.bind(this);
@@ -50,21 +44,11 @@ class GameForm extends Component {
     const isValid = Object.keys(errors).length === 0;
 
     if (isValid) {
-      const {title, cover} = this.state;
+      const {_id, title, cover} = this.state;
       this.setState({isLoading: true});
-      this.props.saveGames({title, cover})
-        .then(
-            (res) => {this.setState({done: true})},
-            (err) => err.response.json()
-            .then(({errors}) => this.setState({
-              errors, isLoading: false
-            }))
-      );
-    }
-  }
-  componentDidMount = () => {
-    if (this.props.match.params._id) {
-      this.props.fetchOneGame(this.props.match.params._id);
+      this.props.saveGame({_id, title, cover})
+      .catch((err) => err.response.json()
+      .then(({errors}) => this.setState({errors})));
     }
   }
 
@@ -110,23 +94,8 @@ class GameForm extends Component {
 
     return (
       <div>
-        {this.state.done ? <Redirect to="/games" /> : form}
+        {form}
       </div>
     );
   }
 }
-
-GameForm.propTypes = {
-  saveGames: PropTypes.func.isRequired
-}
-
-function mapStateToProps(state, props) {
-  if (props.match.params._id) {
-    return {
-      game: state.games.find(item => item._id === props.match.params._id)
-    }
-  }
-  return {game: null};
-}
-
-export default connect(mapStateToProps, {saveGames, fetchOneGame})(GameForm);
